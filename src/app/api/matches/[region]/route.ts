@@ -6,7 +6,8 @@ export async function POST(
   request: Request,
   { params }: { params: { region: string } }
 ) {
-  const routingValue = getRoutingValue(params.region);
+  const { region } = await params;
+  const routingValue = await getRoutingValue(region);
   const apiKey = process.env.RIOT_API_KEY;
 
   try {

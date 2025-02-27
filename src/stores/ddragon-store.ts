@@ -6,6 +6,8 @@ interface DDragonStore {
   runesMap: Record<number, string>;
   runeTreeMap: Record<number, string>;
   isLoaded: boolean;
+  isLoading: boolean;
+  error: string | null;
   fetchData: () => Promise<void>;
 }
 
@@ -15,45 +17,39 @@ export const useDDragonStore = create<DDragonStore>((set, get) => ({
   runesMap: {},
   runeTreeMap: {},
   isLoaded: false,
+  isLoading: false,
+  error: null,
   fetchData: async () => {
-    // check is loaded; if loaded, do nothing
-    if (get().isLoaded) return;
-    // fetch latest patch version
-    const versionResponse = await fetch(
-      'https://ddragon.leagueoflegends.com/api/versions.json'
-    );
-    const versions = await versionResponse.json();
-    const version = versions[0];
+    // Check if already loaded or loading
+    if (get().isLoaded || get().isLoading) return;
 
-    // fetch summoner spells data and build map
-    const summonerSpellsResponse = await fetch(
-      `https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/summoner.json`
-    );
-    const summonerSpellsData = await summonerSpellsResponse.json();
-    const summonerSpellsMap: Record<number, string> = {};
-    Object.values(summonerSpellsData.data).forEach((spell: any) => {
-      summonerSpellsMap[Number(spell.key)] = spell.id;
-    });
+    set({ isLoading: true, error: null });
 
-    // fetch runes data and build map
-    const runesResponse = await fetch(
-      `https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/runesReforged.json`
-    );
-    const runesData = await runesResponse.json();
-    const runesMap: Record<number, string> = {};
-    const runeTreeMap: Record<number, string> = {};
-    runesData.forEach((runeTree: any) => {
-      // Save the top-level rune tree icon (for secondary style)
-      runeTreeMap[runeTree.id] = runeTree.icon;
-      // Then iterate through slots for individual runes (e.g., keystones)
-      runeTree.slots.forEach((slot: any) => {
-        slot.runes.forEach((rune: any) => {
-          runesMap[rune.id] = rune.icon;
-        });
+    try {
+      // Fetch from our API endpoint that handles caching
+      const response = await fetch('/api/ddragon');
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch DDragon data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Update the store with the fetched data
+      set({
+        version: data.version,
+        summonerSpellsMap: data.summonerSpellsMap,
+        runesMap: data.runesMap,
+        runeTreeMap: data.runeTreeMap,
+        isLoaded: true,
+        isLoading: false,
       });
-    });
-
-    // update store state
-    set({ version, summonerSpellsMap, runesMap, runeTreeMap, isLoaded: true });
+    } catch (error) {
+      console.error('Error fetching DDragon data:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 }));

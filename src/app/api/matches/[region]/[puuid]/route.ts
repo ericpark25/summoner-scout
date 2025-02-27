@@ -6,8 +6,8 @@ export async function GET(
   request: Request,
   { params }: { params: { region: string; puuid: string } }
 ) {
-  const { puuid } = params;
-  const routingValue = getRoutingValue(params.region);
+  const { puuid, region } = await params;
+  const routingValue = await getRoutingValue(region);
   const apiKey = process.env.RIOT_API_KEY;
 
   // search params

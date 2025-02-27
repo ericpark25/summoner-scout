@@ -12,7 +12,7 @@ export async function GET(
   request: Request,
   { params }: { params: { region: string; 'gameName-tagLine': string } }
 ) {
-  const { region, 'gameName-tagLine': gameNameTagLine } = params;
+  const { region, 'gameName-tagLine': gameNameTagLine } = await params;
   const [gameName, tagLine] = gameNameTagLine.split('-');
 
   const apiKey = process.env.RIOT_API_KEY;

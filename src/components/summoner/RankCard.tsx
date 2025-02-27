@@ -20,7 +20,7 @@ const RankCard = ({ rankedInfo }: RankCardProps) => {
             return (
               <div
                 key={item.queueType}
-                className='border-2 border-primary px-8 py-2 rounded-lg'
+                className='shadow-md bg-slate-100 px-8 py-2 rounded-lg'
               >
                 <h2 className='font-bold text-center'>
                   {formatRankQueueType(item.queueType)}
