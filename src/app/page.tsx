@@ -1,4 +1,6 @@
+import DDragonLoader from '@/components/store/DDragonLoader';
 import Search from '@/components/search/Search';
+import { useDDragonStore } from '@/stores/ddragon-store';
 
 export default function Home() {
   return (

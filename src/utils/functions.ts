@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import { Match as MatchType, Participant } from './types';
 
 export function formatTimeAgo(timestamp: number): string {
   const date = new Date(timestamp);
@@ -62,4 +63,77 @@ export function calculateWinRate(wins: number, losses: number): string {
   const totalGames = wins + losses;
   if (totalGames === 0) return '0%';
   return `${((wins / totalGames) * 100).toFixed(2)}%`;
+}
+
+// sort a team based on their role
+export const sortByRole = (team: Participant[]) => {
+  const roleOrder = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY'];
+
+  return team.sort((a, b) => {
+    const aPosition = a.teamPosition || a.individualPosition || '';
+    const bPosition = b.teamPosition || b.individualPosition || '';
+
+    return (
+      roleOrder.indexOf(aPosition as string) -
+      roleOrder.indexOf(bPosition as string)
+    );
+  });
+};
+
+// truncate text when it exceeds a certain length
+export const truncateText = (text: string, limit: number) => {
+  if (!text) return '';
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit)}...`;
+};
+
+// queueId to gameMode
+export const matchQueueType = (queueId: number) => {
+  switch (queueId) {
+    case 0:
+      return 'Custom';
+    case 420:
+      return 'Ranked Solo';
+    case 440:
+      return 'Ranked Flex';
+    case 400:
+      return 'Normal Draft';
+    case 430:
+      return 'Normal Blind';
+    case 450:
+      return 'ARAM';
+    case 900:
+      return 'ARURF';
+    case 76:
+      return 'URF';
+    default:
+      return '';
+  }
+};
+
+export function calculateKillParticipation(
+  match: MatchType,
+  participant: Participant
+): number {
+  // Get all participants on the player's team
+  const teamParticipants = match.info.participants.filter(
+    (p) => p.teamId === participant.teamId
+  );
+
+  // Calculate total team kills
+  const totalTeamKills = teamParticipants.reduce((sum, p) => sum + p.kills, 0);
+
+  // If the team has no kills, return 0 to avoid division by zero
+  if (totalTeamKills === 0) {
+    return 0;
+  }
+
+  // Calculate the player's contribution (kills + assists)
+  const playerContribution = participant.kills + participant.assists;
+
+  // Calculate kill participation percentage
+  const killParticipation = (playerContribution / totalTeamKills) * 100;
+
+  // Return rounded to one decimal place
+  return Math.round(killParticipation * 10) / 10;
 }
