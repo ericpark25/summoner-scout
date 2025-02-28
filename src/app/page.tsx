@@ -1,6 +1,4 @@
-import DDragonLoader from '@/components/store/DDragonLoader';
 import Search from '@/components/search/Search';
-import { useDDragonStore } from '@/stores/ddragon-store';
 
 export default function Home() {
   return (
@@ -8,7 +6,7 @@ export default function Home() {
       <h1 className='text-5xl font-bold tracking-wide text-primary'>
         Summoner<span className='text-secondary-foreground'>Scout</span>
       </h1>
-      <Search nav={false} />
+      <Search variant='home' />
     </main>
   );
 }

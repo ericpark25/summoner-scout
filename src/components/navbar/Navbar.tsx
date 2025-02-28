@@ -11,7 +11,7 @@ const Navbar = () => {
             Summoner<span className='text-secondary-foreground'>Scout</span>
           </h2>
         </Link>
-        <Search nav={true} />
+        <Search variant='navbar' />
       </Container>
     </nav>
   );
