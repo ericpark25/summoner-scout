@@ -1,26 +1,49 @@
 'use server';
 
 import axios from 'axios';
-import {
-  type RankedInfo,
-  RiotAccountSchema,
-  SummonerSchema,
-} from '@/utils/types';
-import { getRoutingValue } from './functions';
 
 export const fetchSummoner = async (
   gameName: string,
   tagLine: string,
   region: string
 ) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/summoner/${region}/${gameName}-${tagLine}`
-  );
-  if (!res.ok)
-    throw new Error(
-      `Failed to fetch summoner data: ${res.status} - ${res.statusText}`
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/summoner/${region}/${gameName}-${tagLine}`
     );
-  return res.json();
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 429) {
+        // parse rate limit information from headers
+        const retryAfter = res.headers.get('Retry-After');
+        const retryMs = retryAfter ? parseInt(retryAfter) * 1000 : 10000;
+
+        return {
+          success: false,
+          message:
+            data.message || 'Rate limit exceeded. Please try again later.',
+          isRateLimited: true,
+          retryAfter: retryMs,
+        };
+      }
+
+      return {
+        success: false,
+        message:
+          data.message ||
+          `Failed to fetch summoner data: ${res.status} - ${res.statusText}`,
+      };
+    }
+    return data;
+  } catch (error) {
+    console.error('Error in fetchSummoner:', error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
 };
 
 export const getIconLink = async (profileIconId: number) => {
