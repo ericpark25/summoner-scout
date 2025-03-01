@@ -42,7 +42,7 @@ const Search = ({ variant, className }: SearchProps) => {
       className={cn(
         isNavbar
           ? 'flex-col'
-          : 'border p-4 rounded-lg shadow-md w-full max-w-md mx-auto',
+          : 'border p-4 rounded-lg shadow-md w-full max-w-lg mx-auto',
         className
       )}
     >

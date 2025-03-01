@@ -5,6 +5,7 @@ import { fetchSummoner } from '@/utils/actions';
 import { type SummonerWithRank } from '@/utils/types';
 import DDragonLoader from '@/components/store/DDragonLoader';
 import SummonerStoreInitializer from '@/components/store/SummonerStoreInitializer';
+import RateLimitAlert from '@/components/global/RateLimitAlert';
 
 const SummonerPage = async ({
   params,
@@ -17,6 +18,31 @@ const SummonerPage = async ({
   const summonerData = await fetchSummoner(gameName, tagLine, region);
   // console.log(summonerData);
 
+  // handle rate limit error
+  if (
+    'success' in summonerData &&
+    !summonerData.success &&
+    summonerData.isRateLimited
+  ) {
+    return (
+      <section className='flex flex-col gap-y-8'>
+        <div className='mx-auto max-w-xl py-12 text-center'>
+          <h1 className='text-3xl font-bold text-primary mb-6'>
+            Rate Limit Reached
+          </h1>
+          <RateLimitAlert
+            message={summonerData.message}
+            retryAfter={summonerData.retryAfter}
+          />
+          <p className='mt-4 text-muted-foreground'>
+            We've reached Riot API's rate limit. Please try again later.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  // other error responses
   if ('success' in summonerData && !summonerData.success) {
     // error response case
     return (
